@@ -1,0 +1,539 @@
+- If u want to bind the data to any kind of html attribute then we have to define like this		** v-bind -> directive **
+
+	.js
+	---
+        website: 'https://google.com',
+
+	.html
+	----
+	
+	<a v-bind:href="website">the Net Ninja</a>
+				
+				or
+
+	<a :href="website">the Net Ninja</a> 
+
+- If we want to bind the whole link inside the DOM then we have to do like this		** v-html **
+
+	.js
+	--
+        websiteTag: '<a href="https://google.com">The Net</a>'	
+
+	.html
+	----
+        <p v-html="websiteTag"></p>
+
+- If we want to output a function then we use
+	
+	<p>{{ handleClick() }}</p>		- Here we return the value
+
+- If we want to attach an event then we use		** v-on:click **
+	
+	<button v-on:click="substract">Subs a Year</button>
+
+- Events like:		v-on:click, v-on:dblclick, v-on:mousemove, etc.
+
+- Mouse Event modifiers
+-----------------------
+ 	once - used for invoke only once
+
+	Ex:    <button v-on:click.once="add(1)">Add a Year</button>
+
+	prevent - used for prevent the link to go for another page
+
+	Ex:    <a v-on:click.prevent="click" href="https://google.com">The Net</a>
+
+** we have use that event modifiers by using ' .eventModifierName '
+
+- Keyboard Event modifiers
+--------------------------
+
+	.enter, 
+	.alt
+
+	Ex:         	<input type="text" v-on:keyup.enter="logName">
+	Ex:		<input type="text" v-on:keyup.alt.enter="logAge">
+
+
+** When we call a method we have to write -  {{ methodName() }}
+** When we call a Computed Properties we have to write -  {{ comPropName }}
+** No ' corly-braces() ' are there in computed properties
+
+How we define css Class
+------------------------
+
+EX:         <div v-bind:class="{red: false}"></div>
+
+- Here ' red ' is the class name and ' false ' is the boolean value
+
+Conditionals(v-if, v-else-if and v-show)
+------------
+
+Ex: 	
+	<p v-if="error">There has been an error</p>
+        <p v-else-if="success">Woo, success :)</p>
+        <p v-show="error">There has been an error</p>
+
+- The difference between v-if and v-show directive is if v-if is getting false then the element will remove from the DOM but v-show will still remain there in the DOM.
+
+DOM Example:
+
+	<p style="display: none;">There has been an error</p>		
+	<p style="">Woo, success :)</p> 
+- this example is using v-show directive
+
+How To Create a Component
+-------------------------
+
+Vue.component('componentName', {
+	template: '<p>How r u</p>',
+	data: function() {
+		return {
+
+		}
+	},
+	methods: {
+		change: function() {
+
+		}
+	}
+});
+
+
+Refs
+----
+
+- It is basically use for updating the value
+
+	.html
+	------
+        <input type="text" ref="input">
+
+	.js
+	----
+	(this.$refs.refsName.value)	//Syntax
+       	console.log(this.$refs.input.value);
+
+
+To Create a Vue App using Vue CLI
+=================================
+
+1) npm install -g @vue/cli
+2) npm i -g @vue/cli-init
+3) vue init webpack-simple projectName
+4) cd projectName
+5) npm install
+5) npm run dev
+
+
+props
+=====
+- Here we pass the data from Root Component to Child Component (root -> child)
+
+-how we define props
+
+	App.vue		// root component
+	-------
+    	<app-ninjas v-bind:das="ninjas"></app-ninjas>
+
+- Here in this code "das" is the props name that we are receiving in the child component and "ninjas" is the array that we passed in the root component.
+
+	Child.vue	// child component
+	---------
+	props: {
+    	  das: {
+      	   type: Array
+	   required: true
+    	  }
+  	}
+
+- Here in this code we are receiving the data that has passed by the root component(App.vue)
+
+** Primitive and Reference Types in Props
+   --------------------------------------
+
+- In Reference type it includes - Array, Object, etc
+     --------------	
+- Reference Type Modify the main data or main component(root component i.e, App.vue) that we are getting
+
+- In Primitive type it includes - String, Boolean, etc
+     --------------
+- Primitive Type Modify the Component that we want to modify(like child component) it will not effect the main component.
+
+
+How we can pass the data from child Component to Root Component ?
+=================================================================
+- Here first we pass the data from Child to Root Component after that Root Component upadte the data and again passed it to the Another Child Component.
+(child -> root -> child)
+
+** $emit() **
+
+	Child.vue
+	---------
+	methods: {
+    	  changeTitle: function() {
+      	    this.$emit('changeTitle', 'Vue Wizards')		//Here 'changeTitle' is the method name and 'Vue Wizards' is the value that we want to show after the change
+    	  }
+  	}
+
+	App.vue
+	-------
+<template>
+  <div>
+    <app-header v-bind:title="title" v-on:changeTitle="updateTitle($event)"></app-header>
+    <app-ninjas v-bind:das="ninjas"></app-ninjas>
+    <app-footer v-bind:title="title"></app-footer>
+  </div>
+</template>
+
+<script>
+methods: {
+    updateTitle: function(updateTit) {
+      this.title = updateTit;
+    }
+  }
+</script>
+
+How we can change data directly between two Child Components ?
+==============================================================
+
+** Event Bus **
+
+- First we need define the event bus inside the "main.js" file
+- Then we need to export it so that child component can access the event bus.
+
+	main.js
+	-------
+Ex: 	export const bus = new Vue();
+
+	Child1.vue
+	----------
+<script>
+  import { bus } from "../main";
+
+export default {
+
+  methods: {
+    changeTitle: function() {
+      this.title = "Vue Wizards";
+      bus.$emit('changeTitle', 'Vue Wizards');		// Here "changeTitle" is the method name that we add in another child Component and "Vue Wizards" is the value that we want to show after the change
+    }
+  }
+}
+</script>
+
+	Child2.vue
+	----------
+
+<script>
+  import { bus } from "../main";
+
+export default {
+
+  created() {
+      bus.$on('changeTitle', (data) => {
+        this.title = data;
+      })
+    }
+}
+</script>
+
+Life Cycle Hooks
+================
+
+* beforeCreate()
+  --------------
+- It will work Before Vue Component created
+
+* created()
+  ---------
+- This function fires when the component has been created
+
+* beforeMount()
+  -------------
+- It fires before mount.
+
+* mounted()
+  ---------
+- It will work when the element is in the DOM.
+
+* beforeUpdate()
+  ---------------
+- It call this function before any update to know the previous data.
+
+* updated()
+  ---------
+- It will check after update the data.
+
+* beforeDestroy()
+  ---------------
+- It will work before destroyed if we want to see our data.
+
+* destroyed()
+  -----------
+- If we want to clean up something then we used this function. 
+
+
+Slots
+=====
+
+- if we want to pass html element from Parent to Child Component then we can simply use "slot"
+
+	App.vue
+	-------
+<template>
+  <div>
+    <form-helper>
+      <h2 slot="title">{{ title }}</h2>
+      <p slot="para">I am the paragraph</p>
+    </form-helper>
+  </div>
+</template>
+
+<script>
+export default {
+  data () {
+    return {
+      title: 'This is changed Dynamically'
+    }
+  }
+}
+</script>
+
+	Child.vue
+	---------
+<template>
+    <div>
+        <slot name="title"></slot>
+        <h1>I am the Form Helper</h1>
+        <slot name="para"></slot>
+    </div>
+</template>
+
+
+Dynamic Components
+==================
+
+- Take the component into "component tag" that is already created by Vue.
+
+Ex:	<keep-alive>
+      	   <component v-bind:is="component"></component>
+    	</keep-alive>
+
+- Here "keep-alive" element is used for keeping the data alive if we move one component to another
+
+Lazy Modifier:
+=============
+- It is used for tab
+
+Checkbox Binding: 
+================
+
+Ex:     <label>Mario</label>
+          <input type="checkbox" value="mario" v-model="blog.categories">
+        <label>Cheese</label>
+          <input type="checkbox" value="cheese" v-model="blog.categories">
+
+Selectbox Binding:
+==================
+
+Ex:   <label>Author:</label>
+      <select v-model="blog.author">
+        <option v-for="(auth, index) in authors" v-bind:key="index">{{ auth }}</option>
+      </select>
+
+
+Http Requests
+=============
+- To handle http requests in Vue we have to install 
+	
+	npm install vue-resource --save
+
+- Now we need to tell vue js that we want to use this "VueResource" plugin
+- So to do that we have to 
+
+	import "vue-resource" library in "main.js" file
+
+- Now we need to tell vue js that we are using this(VueResource) in our Application
+- So to do that we have to 
+
+	Vue.use(VueResource);
+
+
+Custom Directive: (Registered Globally)
+=================
+
+	Child.vue
+	---------
+<template>
+  <div v-theme:column="'narrow'" id="show-blogs">					// Here "theme" is the directive name, "column" is the directive argument and "narrow" is the directive value
+    <h1>All Blog Articles</h1>
+    <div v-for="(blog, index) in blogs" v-bind:key="index" class="single-blog">
+      <h2 v-rainbow>{{ blog.title }}</h2>
+      <article>{{ blog.body }}</article>
+    </div>
+  </div>
+</template>
+
+	main.js
+	-------
+- To create cumtom directive, Syntax is
+	
+	Vue.directive('directiveName', {
+		bind(el, binding, vnode) {}			// Here "bind" is a life Cycle Hook method that binds all element, "el" is the element where we define the directive, "binding" gives the information about the directive
+	  })
+
+Vue.directive('rainbow', {
+  bind(el, binding, vnode) {
+    el.style.color = "#" + Math.random().toString().slice(2, 8);
+  }
+});
+
+Vue.directive('theme', {
+  bind(el, binding, vnode) {
+    if(binding.value == "wide") {
+      el.style.maxWidth = "1200px";
+    } else if(binding.value == "narrow") {
+      el.style.maxWidth = "500px";
+    }
+    if(binding.arg == "column") {
+      el.style.background = "#ddd";
+      el.style.padding = "20px";
+
+    }
+  }
+});
+
+
+What is Filter ? (Registered Globally)
+==================
+
+- To change the output of a data.
+
+	Child.vue
+	---------
+
+<h2 v-rainbow>{{ blog.title | to-uppercase }}</h2>
+<article>{{ blog.body | snippet }}</article>			// Here "snippet" is the filter name and "blog.body" is the filter value 
+
+	main.js
+	------
+Filter Syntax:
+	
+	Vue.filter('filterName', function(value) {
+  	    return value;
+	});
+
+
+Ex:
+
+Vue.filter('to-uppercase', function(value) {
+  return value.toUpperCase();
+});
+
+Vue.filter('snippet', function(value) {
+  return value.slice(0, 100) + "...";
+})		
+
+
+How we Registered Things(directives and filters) Locally :
+==========================================================
+
+	child.vue
+	=========
+  filters: {
+    "to-uppercase": function(value) {
+      return value.toUpperCase();
+    }
+  },
+
+  directives: {
+    "rainbow": {
+      bind(el, binding, vnode) {
+        el.style.color = "#" + Math.random().toString().slice(2, 8);        
+      }
+    }
+  }
+
+
+How to Use Mixins
+=================
+
+- Create a file for Mixins and add export the functionality that you want to add.
+- Now import the mixin file to your file.
+- Add the mixin property
+
+	mixin.js
+	--------
+
+export default {
+  computed: {
+    filteredBlogs: function() {
+        return this.blogs.filter((blog) => {
+          return blog.title.match(this.search);
+      });
+    }
+  }
+}
+
+	component.vue
+	-------------
+
+	import searchMixins from "../mixins/searchMixins";
+
+	mixins: [searchMixins]
+
+
+Routing:
+=======
+
+- Install router
+
+	npm install vue-router --save
+
+- Import in "main.js" file.
+
+	main.js
+	-------
+
+import VueRouter from 'vue-router'
+import Routes from './routes';			// It is the "routes.js" file that we import here
+
+Vue.use(VueRouter);
+
+const router = new VueRouter({
+  routes: Routes
+});
+
+new Vue({
+  el: '#app',
+  render: h => h(App),
+  router: router				// Here we add the router instance in Vue instance
+});
+
+
+	routes.js
+	---------
+
+import showBlogs from './components/showBlogs.vue'		// This is the two file where we want to add routing
+import addBlog from './components/addBlog.vue'
+
+export default [
+    {path: '/', component: showBlogs},
+    {path: '/add', component: addBlog},
+]
+
+
+- To show the routing we have to add "<router-view>" inside "App.vue"(root component)
+
+	App.vue
+	-------
+
+<template>
+  <div>
+    <router-view></router-view>
+  </div>
+</template>
+
+
+
